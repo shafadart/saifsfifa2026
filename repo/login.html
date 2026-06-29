@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV MAMA - Login | Saif Afroz</title>
+    <style>
+        :root {
+            --bg: #0f172a; --card: #1e293b; --primary: #00b4d8;
+            --accent: #e63946; --border: #334155; --text: #f8fafc; --muted: #94a3b8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: var(--text); padding: 20px;
+        }
+        .logo { font-size: 2rem; font-weight: 900; margin-bottom: 8px; letter-spacing: -1px; }
+        .logo span { color: var(--accent); }
+        .tagline { color: var(--muted); font-size: 0.9rem; margin-bottom: 30px; text-align: center; }
+        .card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            padding: 35px 30px; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .tabs { display: flex; margin-bottom: 25px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        .tab { flex: 1; padding: 10px; background: transparent; border: none; color: var(--muted); font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .tab.active { background: var(--primary); color: #fff; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+        input { width: 100%; padding: 12px 14px; background: #0f172a; border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+        input:focus { border-color: var(--primary); }
+        .btn { width: 100%; padding: 13px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.88; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-accent { background: var(--accent); color: #fff; }
+        .msg { margin-top: 14px; padding: 12px; border-radius: 8px; font-size: 0.88rem; text-align: center; display: none; }
+        .msg.success { background: rgba(0,180,216,0.15); border: 1px solid var(--primary); color: var(--primary); display: block; }
+        .msg.error { background: rgba(230,57,70,0.15); border: 1px solid var(--accent); color: var(--accent); display: block; }
+        .msg.pending { background: rgba(255,200,0,0.1); border: 1px solid #ffc800; color: #ffc800; display: block; }
+        .footer-note { margin-top: 20px; color: var(--muted); font-size: 0.8rem; text-align: center; }
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="logo">TV <span>MAMA</span></div>
+<div class="tagline">FIFA World Cup 2026 Live — by Saif Afroz</div>
+
+<div class="card">
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">Login</button>
+        <button class="tab" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <div id="loginForm">
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="loginEmail" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginPass" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary" onclick="doLogin()">Login</button>
+        <div id="loginMsg" class="msg"></div>
+    </div>
+
+    <div id="registerForm" style="display:none;">
+        <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="regName" placeholder="Your name">
+        </div>
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="regEmail" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+            <label>Password (min 6 characters)</label>
+            <input type="password" id="regPass" placeholder="••••••••">
+        </div>
+        <button class="btn btn-accent" onclick="doRegister()">Request Access</button>
+        <div id="registerMsg" class="msg"></div>
+    </div>
+</div>
+
+<div class="footer-note">Powered by <b>Saif Afroz</b></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC74wIku0oTmuF4cMSNbndAVJegpFwW8hs",
+        authDomain: "tv-mama-by-saif.firebaseapp.com",
+        projectId: "tv-mama-by-saif",
+        storageBucket: "tv-mama-by-saif.firebasestorage.app",
+        messagingSenderId: "395532238651",
+        appId: "1:395532238651:web:fb820ed3e96bf178ebc11e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ✅ OPTIMIZATION: Already logged in? Skip login page
+    const existingUid = localStorage.getItem('tvmama_uid');
+    const existingRole = localStorage.getItem('tvmama_role');
+    if (existingUid) {
+        window.location.href = existingRole === 'admin' ? 'admin.html' : 'index.html';
+    }
+
+    function getDeviceId() {
+        let id = localStorage.getItem('device_id');
+        if (!id) {
+            id = 'dev_' + Math.random().toString(36).substr(2, 16) + Date.now();
+            localStorage.setItem('device_id', id);
+        }
+        return id;
+    }
+
+    function showMsg(elId, type, text) {
+        const el = document.getElementById(elId);
+        el.className = 'msg ' + type;
+        el.innerHTML = text;
+    }
+
+    // REGISTER — ✅ Only 1 write (setDoc)
+    window.doRegister = async function() {
+        const name = document.getElementById('regName').value.trim();
+        const email = document.getElementById('regEmail').value.trim();
+        const pass = document.getElementById('regPass').value;
+
+        if (!name || !email || !pass) return showMsg('registerMsg', 'error', 'সব field পূরণ করুন।');
+        if (pass.length < 6) return showMsg('registerMsg', 'error', 'Password কমপক্ষে ৬ অক্ষর হতে হবে।');
+
+        showMsg('registerMsg', 'pending', '<span class="spinner"></span> অপেক্ষা করুন...');
+
+        try {
+            const cred = await createUserWithEmailAndPassword(auth, email, pass);
+            // ✅ OPTIMIZATION: Single write, no extra reads
+            await setDoc(doc(db, 'users', cred.user.uid), {
+                name, email,
+                status: 'pending',
+                role: 'user',
+                createdAt: serverTimestamp(),
+                expireDate: null,
+                deviceId: null
+            });
+            await signOut(auth);
+            showMsg('registerMsg', 'pending', '✅ Registration সফল! Admin approval এর জন্য অপেক্ষা করুন।');
+        } catch (e) {
+            const msgs = {
+                'auth/email-already-in-use': 'এই email দিয়ে আগেই account আছে।',
+                'auth/invalid-email': 'Valid email দিন।',
+                'auth/weak-password': 'Password আরো শক্তিশালী করুন।'
+            };
+            showMsg('registerMsg', 'error', msgs[e.code] || 'Error: ' + e.message);
+        }
+    };
+
+    // LOGIN — ✅ Only 1 read (getDoc) + 1 write (updateDoc deviceId)
+    window.doLogin = async function() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const pass = document.getElementById('loginPass').value;
+
+        if (!email || !pass) return showMsg('loginMsg', 'error', 'Email ও Password দিন।');
+
+        showMsg('loginMsg', 'pending', '<span class="spinner"></span> Login হচ্ছে...');
+
+        try {
+            const cred = await signInWithEmailAndPassword(auth, email, pass);
+            const uid = cred.user.uid;
+
+            // ✅ OPTIMIZATION: Single read
+            const userSnap = await getDoc(doc(db, 'users', uid));
+
+            if (!userSnap.exists()) {
+                await signOut(auth);
+                return showMsg('loginMsg', 'error', 'User data পাওয়া যায়নি। Admin এর সাথে যোগাযোগ করুন।');
+            }
+
+            const userData = userSnap.data();
+
+            if (userData.status === 'pending') {
+                await signOut(auth);
+                return showMsg('loginMsg', 'pending', '⏳ Account এখনো approved হয়নি। Admin এর জন্য অপেক্ষা করুন।');
+            }
+            if (userData.status === 'blocked') {
+                await signOut(auth);
+                return showMsg('loginMsg', 'error', '🚫 Account blocked। Admin এর সাথে যোগাযোগ করুন।');
+            }
+
+            if (userData.expireDate) {
+                const expDate = userData.expireDate.toDate ? userData.expireDate.toDate() : new Date(userData.expireDate);
+                if (new Date() > expDate) {
+                    await signOut(auth);
+                    return showMsg('loginMsg', 'error', '⌛ Subscription expire হয়েছে। Admin এর সাথে যোগাযোগ করুন।');
+                }
+            }
+
+            // ✅ OPTIMIZATION: Single write for deviceId
+            const deviceId = getDeviceId();
+            await updateDoc(doc(db, 'users', uid), { deviceId });
+
+            // ✅ Save all needed data to localStorage (avoid future reads)
+            localStorage.setItem('tvmama_uid', uid);
+            localStorage.setItem('tvmama_name', userData.name || '');
+            localStorage.setItem('tvmama_role', userData.role || 'user');
+            localStorage.setItem('tvmama_status', userData.status);
+            localStorage.setItem('tvmama_expire', userData.expireDate?.toDate ? userData.expireDate.toDate().toISOString() : '');
+            localStorage.setItem('tvmama_login_time', Date.now().toString());
+
+            showMsg('loginMsg', 'success', '✅ Login সফল! Redirect হচ্ছে...');
+
+            setTimeout(() => {
+                window.location.href = userData.role === 'admin' ? 'admin.html' : 'index.html';
+            }, 800);
+
+        } catch (e) {
+            await signOut(auth).catch(() => {});
+            const msgs = {
+                'auth/user-not-found': 'এই email দিয়ে কোনো account নেই।',
+                'auth/wrong-password': 'Password ভুল।',
+                'auth/invalid-credential': 'Email বা Password ভুল।',
+                'auth/too-many-requests': 'অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।'
+            };
+            showMsg('loginMsg', 'error', msgs[e.code] || 'Error: ' + e.message);
+        }
+    };
+</script>
+
+<script>
+    function switchTab(tab) {
+        document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+        document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+        document.querySelectorAll('.tab').forEach((t, i) => {
+            t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
+        });
+    }
+</script>
+</body>
+</html>

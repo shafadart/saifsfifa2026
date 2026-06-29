@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Saif Afroz">
+    <title>TV MAMA - Saif Afroz</title>
+    <meta name="theme-color" content="#0b0f19">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        :root {
+            --bg: #0f172a; --sidebar: #1e293b; --primary: #00b4d8;
+            --accent: #e63946; --border: #334155; --text: #f8fafc; --text-muted: #94a3b8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex; flex-direction: column; height: 100vh;
+            overflow: hidden; color: var(--text); user-select: none; -webkit-user-select: none;
+        }
+        header {
+            height: 60px; padding: 10px 25px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            background: #1e293b; z-index: 10;
+        }
+        .logo { font-weight: 800; font-size: 1.4rem; color: var(--text); letter-spacing: -0.5px; }
+        .logo span.highlight { color: var(--accent); }
+        .header-right { display: flex; gap: 10px; align-items: center; }
+        .user-info { font-size: 0.85rem; color: var(--text-muted); }
+        .expire-info { font-size: 0.75rem; color: var(--text-muted); }
+        .expire-info.soon { color: #fbbf24; }
+        .expire-info.expired { color: var(--accent); }
+        .btn-action { background: var(--primary); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 700; outline: none; transition: background 0.2s; }
+        .btn-action:hover { background: #0096b4; }
+        .btn-fullscreen { background: var(--accent); }
+        .btn-fullscreen:hover { background: #cc2a36; }
+        .btn-logout { background: #374151; }
+        .btn-logout:hover { background: #4b5563; }
+        main { display: flex; flex: 1; width: 100%; height: calc(100vh - 101px); overflow: hidden; }
+        .player-section { flex: 1; min-width: 0; padding: 15px 20px; background: var(--bg); display: flex; flex-direction: column; gap: 12px; justify-content: flex-start; height: 100%; }
+        .video-container { position: relative; background: #000; width: 100%; max-height: 70vh; aspect-ratio: 16/9; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid var(--border); }
+        video { width: 100%; height: 100%; object-fit: contain; }
+        .audio-alert-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 11; }
+        .audio-alert-btn { background: var(--accent); color: white; border: 2px solid #fff; padding: 15px 30px; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; }
+        .ad-container { width: 100%; background: #111827; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; position: relative; padding: 6px 0; flex-shrink: 0; }
+        .ad-label { position: absolute; top: 0; left: 0; background: var(--primary); color: #000; font-size: 0.65rem; font-weight: bold; padding: 2px 6px; border-bottom-right-radius: 6px; z-index: 10; text-transform: uppercase; }
+        .ad-track { display: flex; width: max-content; align-items: center; animation: scrollAds 30s linear infinite; }
+        .ad-container:hover .ad-track { animation-play-state: paused; }
+        .ad-track img { height: 45px; width: auto; margin: 0 15px; border-radius: 4px; cursor: pointer; flex-shrink: 0; }
+        @keyframes scrollAds { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .sidebar { width: 380px; background: var(--sidebar); border-left: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+        .sidebar-title { padding: 20px 20px 10px 20px; font-weight: 700; font-size: 1.1rem; }
+        .sidebar-search { padding: 0 20px 15px 20px; border-bottom: 1px solid var(--border); }
+        .search-input { width: 100%; padding: 10px 14px; background: #0f172a; border: 2px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+        .search-input:focus { border-color: var(--primary); }
+        .ch-list { flex: 1; overflow-y: scroll; padding: 15px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+        .ch-list::-webkit-scrollbar { width: 6px; }
+        .ch-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        .ch-card { padding: 14px 18px; margin-bottom: 10px; background: #0f172a; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; outline: none; }
+        .ch-info-meta { display: flex; align-items: center; gap: 12px; }
+        .ch-logo-img { width: 32px; height: 32px; object-fit: contain; border-radius: 4px; }
+        .ch-card .ch-num { background: var(--border); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; color: var(--text-muted); }
+        .ch-card:focus, .ch-card:hover { border-color: var(--primary); background: #25334a; }
+        .ch-card.active { border-color: var(--accent); background: rgba(230, 57, 70, 0.2); }
+        .ch-card.active .ch-num { background: var(--accent); color: #fff; }
+        footer { height: 41px; padding: 12px 25px; border-top: 1px solid var(--border); font-size: 13px; display: flex; justify-content: space-between; background: #1e293b; color: var(--text-muted); }
+        #authOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 999; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 15px; }
+        .auth-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 1024px) {
+            body { overflow-y: auto !important; height: auto !important; }
+            header { flex-direction: column !important; height: auto !important; padding: 12px 15px !important; gap: 8px !important; }
+            main { flex-direction: column !important; height: auto !important; overflow: visible !important; }
+            .player-section { width: 100% !important; height: auto !important; padding: 12px 10px !important; }
+            .video-container { max-height: none !important; }
+            .sidebar { width: 100% !important; height: 450px !important; border-left: none !important; border-top: 1px solid var(--border) !important; }
+            footer { height: auto !important; flex-direction: column !important; align-items: center !important; padding: 15px !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="authOverlay">
+    <div class="auth-spinner"></div>
+    <div style="color:var(--text-muted);font-size:0.9rem;">Verifying access...</div>
+</div>
+
+<header>
+    <div class="logo">TV MAMA <span class="highlight">FIFA WORLD CUP 2026 LIVE</span></div>
+    <div class="header-right">
+        <div>
+            <div class="user-info">👤 <span id="headerUserName"></span></div>
+            <div class="expire-info" id="expireInfo"></div>
+        </div>
+        <button id="fsBtn" class="btn-action btn-fullscreen" onclick="toggleFullscreen()">FULLSCREEN</button>
+        <button class="btn-action" onclick="shareMe()">SHARE</button>
+        <button class="btn-action btn-logout" onclick="doLogout()">Logout</button>
+    </div>
+</header>
+
+<main>
+    <div class="player-section">
+        <div id="playing-now" style="font-size:1.3rem;font-weight:700;color:var(--primary);">Loading Channels...</div>
+        <div class="video-container" id="videoContainer">
+            <div id="audioOverlay" class="audio-alert-overlay" style="display:none;">
+                <button class="audio-alert-btn" onclick="unlockAudio()">CLICK TO UNMUTE AUDIO</button>
+            </div>
+            <video id="video" preload="auto" playsinline crossorigin="anonymous"></video>
+        </div>
+        <div class="ad-container">
+            <div class="ad-label">Sponsored</div>
+            <div class="ad-track">
+                <a href="#"><img src="/advertise/adv1.png" alt="Ad"></a>
+                <a href="#"><img src="/advertise/adv1.png" alt="Ad"></a>
+                <a href="#"><img src="/advertise/adv1.png" alt="Ad"></a>
+                <a href="#"><img src="/advertise/adv1.png" alt="Ad"></a>
+                <a href="#"><img src="/advertise/adv1.png" alt="Ad"></a>
+                <a href="#"><img src="/advertise/adv1.png" alt="Ad"></a>
+            </div>
+        </div>
+    </div>
+    <div class="sidebar">
+        <div class="sidebar-title">📺 Channels<br><small style="font-weight:400;color:var(--text-muted);font-size:0.8rem;">Keyboard: ↑↓ arrows or 1-2-3</small></div>
+        <div class="sidebar-search">
+            <input type="text" id="chSearch" class="search-input" placeholder="Search channel..." oninput="filterChannels()">
+        </div>
+        <div class="ch-list" id="channelList"></div>
+    </div>
+</main>
+
+<footer>
+    <div>Powered by: <b>Saif Afroz</b></div>
+    <div id="liveClock"></div>
+    <div style="color:var(--text-muted);font-size:0.8rem;">FIFA World Cup 2026</div>
+</footer>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC74wIku0oTmuF4cMSNbndAVJegpFwW8hs",
+        authDomain: "tv-mama-by-saif.firebaseapp.com",
+        projectId: "tv-mama-by-saif",
+        storageBucket: "tv-mama-by-saif.firebasestorage.app",
+        messagingSenderId: "395532238651",
+        appId: "1:395532238651:web:fb820ed3e96bf178ebc11e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const uid = localStorage.getItem('tvmama_uid');
+    const savedDeviceId = localStorage.getItem('device_id');
+
+    async function verifyAccess() {
+        if (!uid) { window.location.href = 'login.html'; return; }
+
+        // ✅ OPTIMIZATION: Check localStorage cache first (avoid Firestore read)
+        // Only re-verify from Firestore once per 30 minutes
+        const lastVerify = parseInt(localStorage.getItem('tvmama_last_verify') || '0');
+        const now = Date.now();
+        const THIRTY_MIN = 30 * 60 * 1000;
+
+        const status = localStorage.getItem('tvmama_status');
+        const expireStr = localStorage.getItem('tvmama_expire');
+
+        if ((now - lastVerify) < THIRTY_MIN && status === 'active') {
+            // Use cached data — no Firestore read needed
+            if (expireStr) {
+                const expDate = new Date(expireStr);
+                if (now > expDate.getTime()) {
+                    localStorage.clear();
+                    window.location.href = 'login.html';
+                    return;
+                }
+                const daysLeft = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
+                const expEl = document.getElementById('expireInfo');
+                expEl.textContent = `Expires in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
+                expEl.className = 'expire-info' + (daysLeft <= 3 ? ' soon' : '');
+            }
+            document.getElementById('headerUserName').textContent = localStorage.getItem('tvmama_name') || 'User';
+            document.getElementById('authOverlay').style.display = 'none';
+            return;
+        }
+
+        // ✅ Full verify from Firestore (only when cache expired)
+        try {
+            const userSnap = await getDoc(doc(db, 'users', uid));
+            if (!userSnap.exists()) { localStorage.clear(); window.location.href = 'login.html'; return; }
+
+            const userData = userSnap.data();
+
+            if (userData.status === 'pending' || userData.status === 'blocked') {
+                localStorage.clear();
+                await signOut(auth).catch(() => {});
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (userData.expireDate) {
+                const expDate = userData.expireDate.toDate ? userData.expireDate.toDate() : new Date(userData.expireDate);
+                if (new Date() > expDate) {
+                    localStorage.clear();
+                    await signOut(auth).catch(() => {});
+                    window.location.href = 'login.html';
+                    return;
+                }
+                const daysLeft = Math.ceil((expDate - new Date()) / (1000 * 60 * 60 * 24));
+                const expEl = document.getElementById('expireInfo');
+                expEl.textContent = `Expires in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
+                expEl.className = 'expire-info' + (daysLeft <= 3 ? ' soon' : '');
+                localStorage.setItem('tvmama_expire', expDate.toISOString());
+            }
+
+            if (userData.deviceId && userData.deviceId !== savedDeviceId) {
+                localStorage.clear();
+                await signOut(auth).catch(() => {});
+                alert('⚠️ আপনার account অন্য device থেকে login করা হয়েছে।');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // ✅ Update cache
+            localStorage.setItem('tvmama_status', userData.status);
+            localStorage.setItem('tvmama_name', userData.name || 'User');
+            localStorage.setItem('tvmama_last_verify', now.toString());
+
+            document.getElementById('headerUserName').textContent = userData.name || 'User';
+            document.getElementById('authOverlay').style.display = 'none';
+
+        } catch (e) {
+            console.error('Auth error:', e);
+            // ✅ OPTIMIZATION: Don't redirect on network error, use cache
+            if (status === 'active') {
+                document.getElementById('headerUserName').textContent = localStorage.getItem('tvmama_name') || 'User';
+                document.getElementById('authOverlay').style.display = 'none';
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+    }
+
+    window.doLogout = async function() {
+        await signOut(auth).catch(() => {});
+        localStorage.clear();
+        window.location.href = 'login.html';
+    };
+
+    verifyAccess();
+</script>
+
+<script>
+    const channels = [
+        { name: "FIFA Global", logo: "https://tv.rootitsystem.com/icons/fifa.webp", url: "https://live.thebosstv.com:30443/dwlive/Somoy-TV/chunks.m3u8" },
+        { name: "FIFA BDIX Fast", logo: "https://tv.rootitsystem.com/icons/fifa.webp", url: "http://198.195.239.50:8095/tsports/tracks-v1a1/mono.m3u8" },
+        { name: "FIFA BDIX Fast", logo: "https://tv.rootitsystem.com/icons/fifa.webp", url: "http://172.19.17.139:8090/hls/tsportshd3rd.m3u8" },
+        { name: "FIFA BDIX Fast", logo: "https://tv.rootitsystem.com/icons/fifa.webp", url: "http://172.19.17.139:8090/hls/somoytv.m3u8" },
+        { name: "FIFA Global", logo: "https://tv.rootitsystem.com/icons/fifa.webp", url: "https://live.kooran53.cfd/goolato3.m3u8" },
+        { name: "FIFA 360p", logo: "https://tv.rootitsystem.com/icons/fifa.webp", url: "https://hqlive.yarncdn.live/live/hqtv_blv_phanma/playlist.m3u8" },
+        { name: "FIFA 360p", logo: "https://tv.rootitsystem.com/icons/fifa.webp", url: "https://1nyaler.streamhostingcdn.top/stream/94/index.m3u8" },
+        { name: "FIFA 360p", logo: "https://tv.rootitsystem.com/icons/fifa.webp", url: "https://1nyaler.streamhostingcdn.top/stream/32/index.m3u8" },
+        { name: "FIFA 360p", logo: "https://tv.rootitsystem.com/icons/fifa.webp", url: "https://1nyaler.streamhostingcdn.top/stream/23/index.m3u8" },
+        { name: "FIFA 1 (720p)", logo: "https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png", url: "https://1nyaler.streamhostingcdn.top/stream/106/index.m3u8" },
+        { name: "FIFA 2 (4k)", logo: "https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png", url: "https://1nyaler.streamhostingcdn.top/stream/94/index.m3u8" },
+        { name: "FIFA 3 (4k)", logo: "https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png", url: "https://1nyaler.streamhostingcdn.top/stream/32/index.m3u8" },
+        { name: "FIFA 4 (4k)", logo: "https://i.ibb.co.com/vnbkF0r/fifa-world-cup-2026-logo-png-seeklogo-665644.png", url: "https://1nyaler.streamhostingcdn.top/stream/23/index.m3u8" },
+    ];
+
+    let currentChannelIndex = -1;
+    let hls = null;
+
+    function renderChannels(list) {
+        const cl = document.getElementById('channelList');
+        cl.innerHTML = '';
+        list.forEach((ch, i) => {
+            const card = document.createElement('div');
+            card.className = 'ch-card' + (i === currentChannelIndex ? ' active' : '');
+            card.tabIndex = 0;
+            card.innerHTML = `
+                <div class="ch-info-meta">
+                    <img class="ch-logo-img" src="${ch.logo}" alt="${ch.name}" onerror="this.style.display='none'">
+                    <span>${ch.name}</span>
+                </div>
+                <span class="ch-num">CH ${i + 1}</span>`;
+            card.addEventListener('click', () => playChannel(i));
+            card.addEventListener('keydown', (e) => { if (e.key === 'Enter') playChannel(i); });
+            cl.appendChild(card);
+        });
+    }
+
+    function filterChannels() {
+        const q = document.getElementById('chSearch').value.toLowerCase();
+        renderChannels(channels.filter(ch => ch.name.toLowerCase().includes(q)));
+    }
+
+    function playChannel(index) {
+        if (index < 0 || index >= channels.length) return;
+        currentChannelIndex = index;
+        const ch = channels[index];
+        document.getElementById('playing-now').textContent = '▶ Now Playing: ' + ch.name;
+        const video = document.getElementById('video');
+        if (hls) { hls.destroy(); hls = null; }
+        if (Hls.isSupported()) {
+            hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+            hls.loadSource(ch.url.trim());
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                video.play().catch(() => { document.getElementById('audioOverlay').style.display = 'flex'; });
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = ch.url.trim();
+            video.play().catch(() => {});
+        }
+        renderChannels(channels);
+        document.querySelectorAll('.ch-card')[index]?.classList.add('active');
+    }
+
+    function unlockAudio() {
+        const v = document.getElementById('video');
+        v.muted = false; v.play();
+        document.getElementById('audioOverlay').style.display = 'none';
+    }
+
+    function toggleFullscreen() {
+        const el = document.getElementById('videoContainer');
+        if (!document.fullscreenElement) {
+            el.requestFullscreen?.() || el.webkitRequestFullscreen?.();
+        } else {
+            document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+        }
+    }
+
+    function shareMe() {
+        if (navigator.share) {
+            navigator.share({ title: 'TV MAMA', url: window.location.href });
+        } else {
+            navigator.clipboard?.writeText(window.location.href);
+            alert('Link copied!');
+        }
+    }
+
+    // Clock
+    setInterval(() => {
+        document.getElementById('liveClock').textContent = new Date().toLocaleTimeString('en-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }, 1000);
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown') playChannel(currentChannelIndex + 1);
+        else if (e.key === 'ArrowUp') playChannel(currentChannelIndex - 1);
+        else if (e.key >= '1' && e.key <= '9') playChannel(parseInt(e.key) - 1);
+    });
+
+    renderChannels(channels);
+    playChannel(0);
+</script>
+</body>
+</html>

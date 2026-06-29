@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - TV MAMA</title>
+    <style>
+        :root {
+            --bg: #0f172a; --card: #1e293b; --primary: #00b4d8; --accent: #e63946;
+            --green: #22c55e; --yellow: #fbbf24; --border: #334155; --text: #f8fafc; --muted: #94a3b8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); min-height: 100vh; }
+        header { background: var(--card); border-bottom: 1px solid var(--border); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-weight: 900; font-size: 1.3rem; }
+        .logo span { color: var(--accent); }
+        .admin-badge { background: var(--accent); color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+        .btn-logout { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; margin-left: 10px; }
+        .btn-logout:hover { border-color: var(--accent); color: var(--accent); }
+        .container { max-width: 1100px; margin: 0 auto; padding: 25px 20px; }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
+        .stat-num { font-size: 2rem; font-weight: 900; }
+        .stat-label { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+        .stat-card.pending .stat-num { color: var(--yellow); }
+        .stat-card.active .stat-num { color: var(--green); }
+        .stat-card.blocked .stat-num { color: var(--accent); }
+        .stat-card.total .stat-num { color: var(--primary); }
+        .panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+        .panel-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .panel-title { font-weight: 700; font-size: 1rem; }
+        .search-bar { padding: 8px 12px; background: #0f172a; border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.85rem; outline: none; width: 220px; }
+        .search-bar:focus { border-color: var(--primary); }
+        .filter-tabs { display: flex; gap: 6px; }
+        .filter-tab { padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+        .filter-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #0f172a; padding: 12px 15px; text-align: left; font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 14px 15px; border-top: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        .badge { padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+        .badge-pending { background: rgba(251,191,36,0.15); color: var(--yellow); }
+        .badge-active { background: rgba(34,197,94,0.15); color: var(--green); }
+        .badge-blocked { background: rgba(230,57,70,0.15); color: var(--accent); }
+        .badge-expired { background: rgba(148,163,184,0.15); color: var(--muted); }
+        .action-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+        .btn-sm { padding: 5px 10px; border: none; border-radius: 5px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+        .btn-sm:hover { opacity: 0.8; }
+        .btn-approve { background: var(--green); color: #fff; }
+        .btn-block { background: var(--accent); color: #fff; }
+        .btn-unblock { background: var(--primary); color: #fff; }
+        .btn-expire { background: var(--yellow); color: #000; }
+        .btn-delete { background: #374151; color: #fff; }
+        .expire-select { padding: 4px 8px; background: #0f172a; border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-size: 0.78rem; cursor: pointer; }
+        .empty-state { text-align: center; padding: 40px; color: var(--muted); }
+        .toast { position: fixed; bottom: 25px; right: 25px; background: var(--green); color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; z-index: 999; display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        .toast.error { background: var(--accent); }
+        .toast.show { display: block; animation: fadeInUp 0.3s ease; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 768px) { .action-btns { flex-direction: column; } table { display: block; overflow-x: auto; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <span class="logo">TV <span>MAMA</span></span>
+        <span class="admin-badge" style="margin-left:12px;">ADMIN</span>
+    </div>
+    <div>
+        <span id="adminName" style="color:var(--muted);font-size:0.9rem;"></span>
+        <button class="btn-logout" onclick="doLogout()">Logout</button>
+    </div>
+</header>
+
+<div class="container">
+    <div class="stats-row">
+        <div class="stat-card total"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Total Users</div></div>
+        <div class="stat-card pending"><div class="stat-num" id="statPending">0</div><div class="stat-label">Pending Approval</div></div>
+        <div class="stat-card active"><div class="stat-num" id="statActive">0</div><div class="stat-label">Active Users</div></div>
+        <div class="stat-card blocked"><div class="stat-num" id="statBlocked">0</div><div class="stat-label">Blocked</div></div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <span class="panel-title">User Management</span>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="setFilter('all')">All</button>
+                    <button class="filter-tab" onclick="setFilter('pending')">Pending</button>
+                    <button class="filter-tab" onclick="setFilter('active')">Active</button>
+                    <button class="filter-tab" onclick="setFilter('blocked')">Blocked</button>
+                </div>
+                <input class="search-bar" type="text" id="searchInput" placeholder="Search name or email..." oninput="renderTable()">
+                <button class="btn-sm btn-approve" onclick="loadUsers()" style="padding:7px 14px;">🔄 Refresh</button>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th><th>Name</th><th>Email</th><th>Status</th>
+                    <th>Expire Date</th><th>Registered</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody">
+                <tr><td colspan="7" class="empty-state">Loading users...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC74wIku0oTmuF4cMSNbndAVJegpFwW8hs",
+        authDomain: "tv-mama-by-saif.firebaseapp.com",
+        projectId: "tv-mama-by-saif",
+        storageBucket: "tv-mama-by-saif.firebasestorage.app",
+        messagingSenderId: "395532238651",
+        appId: "1:395532238651:web:fb820ed3e96bf178ebc11e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ✅ OPTIMIZATION: Auth check from localStorage only (no Firestore read)
+    const uid = localStorage.getItem('tvmama_uid');
+    const role = localStorage.getItem('tvmama_role');
+    const name = localStorage.getItem('tvmama_name');
+
+    if (!uid || role !== 'admin') { window.location.href = 'login.html'; }
+    document.getElementById('adminName').textContent = name || 'Admin';
+
+    let allUsers = [];
+    let currentFilter = 'all';
+
+    function showToast(msg, isError = false) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast show' + (isError ? ' error' : '');
+        setTimeout(() => t.className = 'toast', 2500);
+    }
+
+    window.setFilter = function(f) {
+        currentFilter = f;
+        document.querySelectorAll('.filter-tab').forEach(btn => {
+            btn.classList.toggle('active', btn.textContent.toLowerCase().includes(f) || (f === 'all' && btn.textContent === 'All'));
+        });
+        renderTable();
+    };
+
+    function getStatus(user) {
+        if (user.status === 'blocked') return 'blocked';
+        if (user.status === 'pending') return 'pending';
+        if (user.expireDate) {
+            const exp = user.expireDate.toDate ? user.expireDate.toDate() : new Date(user.expireDate);
+            if (new Date() > exp) return 'expired';
+        }
+        if (user.status === 'active') return 'active';
+        return 'pending';
+    }
+
+    function formatDate(ts) {
+        if (!ts) return '—';
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    window.renderTable = function() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        let users = allUsers.filter(u => {
+            const matchSearch = u.name?.toLowerCase().includes(search) || u.email?.toLowerCase().includes(search);
+            const status = getStatus(u);
+            const matchFilter = currentFilter === 'all' || status === currentFilter;
+            return matchSearch && matchFilter && u.role !== 'admin';
+        });
+
+        const nonAdmins = allUsers.filter(u => u.role !== 'admin');
+        document.getElementById('statTotal').textContent = nonAdmins.length;
+        document.getElementById('statPending').textContent = nonAdmins.filter(u => getStatus(u) === 'pending').length;
+        document.getElementById('statActive').textContent = nonAdmins.filter(u => getStatus(u) === 'active').length;
+        document.getElementById('statBlocked').textContent = nonAdmins.filter(u => getStatus(u) === 'blocked').length;
+
+        const tbody = document.getElementById('userTableBody');
+        if (users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">কোনো user পাওয়া যায়নি।</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = users.map((u, i) => {
+            const status = getStatus(u);
+            const badgeMap = { pending: 'badge-pending', active: 'badge-active', blocked: 'badge-blocked', expired: 'badge-expired' };
+            const labelMap = { pending: '⏳ Pending', active: '✅ Active', blocked: '🚫 Blocked', expired: '⌛ Expired' };
+
+            let actions = `<div class="action-btns">
+                <select class="expire-select" id="exp_${u.id}">
+                    <option value="7">7 Days</option>
+                    <option value="30">1 Month</option>
+                    <option value="90">3 Months</option>
+                    <option value="365">1 Year</option>
+                </select>`;
+            if (status === 'pending') actions += `<button class="btn-sm btn-approve" onclick="approveUser('${u.id}')">✅ Approve</button>`;
+            if (status !== 'blocked') actions += `<button class="btn-sm btn-block" onclick="blockUser('${u.id}')">🚫 Block</button>`;
+            else actions += `<button class="btn-sm btn-unblock" onclick="unblockUser('${u.id}')">✅ Unblock</button>`;
+            actions += `<button class="btn-sm btn-expire" onclick="setExpire('${u.id}')">📅 Set Expire</button>`;
+            actions += `<button class="btn-sm btn-delete" onclick="deleteUser('${u.id}')">🗑 Delete</button></div>`;
+
+            return `<tr>
+                <td>${i + 1}</td>
+                <td><b>${u.name || '—'}</b></td>
+                <td style="color:var(--muted);font-size:0.85rem;">${u.email}</td>
+                <td><span class="badge ${badgeMap[status]}">${labelMap[status]}</span></td>
+                <td style="font-size:0.85rem;">${formatDate(u.expireDate)}</td>
+                <td style="font-size:0.82rem;color:var(--muted);">${formatDate(u.createdAt)}</td>
+                <td>${actions}</td>
+            </tr>`;
+        }).join('');
+    };
+
+    // ✅ OPTIMIZATION: Load users only once (on demand via Refresh button)
+    window.loadUsers = async function() {
+        try {
+            const snap = await getDocs(collection(db, 'users'));
+            allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderTable();
+        } catch (e) {
+            showToast('Error loading users: ' + e.message, true);
+        }
+    };
+
+    window.approveUser = async function(userId) {
+        const expDays = parseInt(document.getElementById('exp_' + userId)?.value || 30);
+        const expDate = new Date();
+        expDate.setDate(expDate.getDate() + expDays);
+        try {
+            await updateDoc(doc(db, 'users', userId), { status: 'active', expireDate: Timestamp.fromDate(expDate) });
+            showToast(`✅ User approved! Expires in ${expDays} days.`);
+            loadUsers();
+        } catch (e) { showToast('Error: ' + e.message, true); }
+    };
+
+    window.blockUser = async function(userId) {
+        if (!confirm('এই user কে block করবেন?')) return;
+        try {
+            await updateDoc(doc(db, 'users', userId), { status: 'blocked', deviceId: null });
+            showToast('🚫 User blocked.');
+            loadUsers();
+        } catch (e) { showToast('Error: ' + e.message, true); }
+    };
+
+    window.unblockUser = async function(userId) {
+        try {
+            await updateDoc(doc(db, 'users', userId), { status: 'active' });
+            showToast('✅ User unblocked.');
+            loadUsers();
+        } catch (e) { showToast('Error: ' + e.message, true); }
+    };
+
+    window.setExpire = async function(userId) {
+        const expDays = parseInt(document.getElementById('exp_' + userId)?.value || 30);
+        const expDate = new Date();
+        expDate.setDate(expDate.getDate() + expDays);
+        try {
+            await updateDoc(doc(db, 'users', userId), { expireDate: Timestamp.fromDate(expDate), status: 'active' });
+            showToast(`📅 Expire date set: ${expDays} days from now.`);
+            loadUsers();
+        } catch (e) { showToast('Error: ' + e.message, true); }
+    };
+
+    window.deleteUser = async function(userId) {
+        if (!confirm('এই user সম্পূর্ণ delete করবেন?')) return;
+        try {
+            await deleteDoc(doc(db, 'users', userId));
+            showToast('🗑 User deleted.');
+            loadUsers();
+        } catch (e) { showToast('Error: ' + e.message, true); }
+    };
+
+    window.doLogout = async function() {
+        await signOut(auth).catch(() => {});
+        localStorage.clear();
+        window.location.href = 'login.html';
+    };
+
+    loadUsers();
+</script>
+</body>
+</html>
