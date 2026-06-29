@@ -1,0 +1,64 @@
+.tickerContainer {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid var(--glass-border);
+  height: 40px;
+  align-items: center;
+  overflow: hidden;
+}
+
+.tickerLabel {
+  background: var(--primary);
+  color: #000;
+  padding: 0 20px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+
+.tickerContent {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.countdownText {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.matchup {
+  color: #fff;
+  font-size: 1.05rem;
+}
+
+.separator {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.timeInfo {
+  color: var(--primary);
+}
+
+.timer strong {
+  color: var(--accent);
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 768px) {
+  .tickerContent {
+    justify-content: flex-start;
+    padding-left: 15px;
+    overflow-x: auto;
+  }
+}

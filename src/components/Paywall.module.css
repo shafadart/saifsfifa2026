@@ -1,0 +1,226 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(5, 5, 10, 0.6);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+}
+
+.modal {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3rem;
+  border-radius: 20px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  text-align: center;
+  animation: slideUp 0.4s ease-out;
+}
+
+.modal h2 {
+  color: var(--primary);
+  margin-top: 0;
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+.paymentBox {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.paymentBox h3 {
+  margin-top: 0;
+  color: #fff;
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.highlightPrice {
+  color: #000;
+  background: var(--primary);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+}
+
+.method {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.method span {
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 1.1rem;
+}
+
+.copyBtn {
+  background: var(--primary);
+  color: #000;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.copyBtn:hover {
+  background: var(--primary-hover);
+}
+
+.whatsappBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #25D366;
+  color: #fff;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  transition: transform 0.2s ease;
+}
+
+.whatsappBtn:hover {
+  transform: scale(1.05);
+}
+
+.keyForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.keyInput {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  padding: 15px;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1.1rem;
+  text-align: center;
+  font-family: monospace;
+}
+
+.keyInput:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+.submitBtn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.submitBtn:hover {
+  background: var(--accent-hover);
+}
+
+.submitBtn:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
+}
+
+.error {
+  color: var(--accent);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.bannedScreen {
+  background: #0a0000;
+  color: #ff0000;
+  text-align: center;
+  border: 3px solid #ff0000;
+  padding: 4rem 3rem;
+  box-shadow: 0 0 50px rgba(255, 0, 0, 0.5) inset, 0 0 100px rgba(255, 0, 0, 0.8);
+  border-radius: 12px;
+  animation: pulseGlitch 2s infinite;
+  max-width: 600px;
+}
+
+.bannedScreen h1 {
+  font-size: 5rem;
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 5px;
+  text-shadow: 4px 4px 0px rgba(0,0,0,0.8), -2px -2px 0px rgba(255,255,255,0.3);
+}
+
+@keyframes pulseGlitch {
+  0% { transform: scale(1); box-shadow: 0 0 50px rgba(255, 0, 0, 0.5) inset, 0 0 100px rgba(255, 0, 0, 0.8); }
+  50% { transform: scale(1.02); box-shadow: 0 0 80px rgba(255, 0, 0, 0.7) inset, 0 0 150px rgba(255, 0, 0, 1); }
+  100% { transform: scale(1); box-shadow: 0 0 50px rgba(255, 0, 0, 0.5) inset, 0 0 100px rgba(255, 0, 0, 0.8); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .modal {
+    padding: 1.5rem;
+  }
+  .modal h2 {
+    font-size: 1.5rem;
+  }
+  .bannedScreen {
+    padding: 2rem 1rem;
+  }
+  .bannedScreen h1 {
+    font-size: 2.5rem;
+    letter-spacing: 2px;
+  }
+  .whatsappBtn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+  .method {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}

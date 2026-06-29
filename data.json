@@ -1,0 +1,34 @@
+{
+  "keys": [
+    {
+      "keyId": "VIP-E9TM-SQ99",
+      "status": "used",
+      "generatedAt": 1782748181965,
+      "usedByDeviceId": "DEV-TGLKRMKJ",
+      "expiresAt": 1783353272526
+    },
+    {
+      "keyId": "VIP-O9FI-XNN3",
+      "status": "unused",
+      "generatedAt": 1782748785704,
+      "usedByDeviceId": null,
+      "expiresAt": null
+    }
+  ],
+  "devices": [
+    {
+      "deviceId": "DEV-TGLKRMKJ",
+      "firstAccessed": 1782747915978,
+      "isBanned": false,
+      "activeKey": "VIP-E9TM-SQ99",
+      "expiresAt": 1783353272526
+    },
+    {
+      "deviceId": "DEV-E59X2SR9",
+      "firstAccessed": 1782748833939,
+      "isBanned": false,
+      "activeKey": null,
+      "expiresAt": null
+    }
+  ]
+}

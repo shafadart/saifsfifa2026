@@ -1,0 +1,141 @@
+.header {
+  height: 70px;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--glass-border);
+  position: relative;
+  z-index: 10;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoImage {
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(255,255,255,0.2));
+}
+
+.logoText {
+  display: flex;
+  flex-direction: column;
+}
+
+.logoText h2 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  color: var(--text);
+  margin: 0;
+}
+
+.logoText span {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.highlight {
+  color: var(--primary);
+  text-transform: uppercase;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.clock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.clockPlaceholder {
+  width: 120px;
+  height: 30px;
+}
+
+.clockTime {
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  font-family: monospace;
+}
+
+.clockLabel {
+  color: var(--primary);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.viewerBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ff3366;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: rgba(255, 51, 102, 0.1);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 51, 102, 0.2);
+}
+
+.eyeIcon {
+  font-size: 1rem;
+}
+
+.theaterBtn {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theaterBtn:hover {
+  background: var(--primary);
+  color: #000;
+  border-color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 0 1rem;
+    height: 60px;
+  }
+  .logoText h2 {
+    font-size: 1rem;
+  }
+  .highlight {
+    font-size: 0.65rem;
+  }
+  .clock {
+    display: none;
+  }
+  .viewerBadge {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+  .theaterBtn {
+    padding: 4px 10px;
+    font-size: 0.7rem;
+  }
+}
