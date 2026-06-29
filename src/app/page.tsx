@@ -58,8 +58,19 @@ export default function Home() {
               toggleTheaterMode={() => setTheaterMode(!theaterMode)}
             />
             {timeLeft > 0 && !isLocked && (
-              <div style={{ textAlign: 'center', marginTop: '10px', color: '#ff3366', fontWeight: 'bold' }}>
-                Free Trial ends in: {Math.ceil(timeLeft / 1000)} seconds
+              <div style={{ 
+                textAlign: 'center', 
+                margin: '15px 0', 
+                color: '#ff3366', 
+                fontWeight: 'bold', 
+                fontSize: '1.2rem', 
+                padding: '12px', 
+                background: 'rgba(255, 51, 102, 0.1)', 
+                border: '1px solid rgba(255, 51, 102, 0.3)', 
+                borderRadius: '8px',
+                boxShadow: '0 0 15px rgba(255, 51, 102, 0.2)'
+              }}>
+                ⏳ Free Trial ends in: {Math.ceil(timeLeft / 1000)} seconds
               </div>
             )}
           </div>

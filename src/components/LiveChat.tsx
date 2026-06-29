@@ -70,7 +70,12 @@ export default function LiveChat() {
 
   // Auto scroll to bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current && messagesEndRef.current.parentElement) {
+      messagesEndRef.current.parentElement.scrollTo({
+        top: messagesEndRef.current.parentElement.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, [messages]);
 
   const handleSend = (e: React.FormEvent) => {
