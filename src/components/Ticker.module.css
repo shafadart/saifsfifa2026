@@ -56,9 +56,29 @@
 }
 
 @media (max-width: 768px) {
+  .tickerLabel {
+    padding: 0 10px;
+    font-size: 0.7rem;
+  }
   .tickerContent {
     justify-content: flex-start;
-    padding-left: 15px;
-    overflow-x: auto;
+    padding-left: 10px;
+    overflow: hidden;
   }
+  .countdownText {
+    gap: 8px;
+    font-size: 0.75rem;
+    animation: marquee 15s linear infinite;
+  }
+  .matchup {
+    font-size: 0.8rem;
+  }
+  .timer strong {
+    font-size: 0.9rem;
+  }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(100vw); }
+  100% { transform: translateX(-100%); }
 }

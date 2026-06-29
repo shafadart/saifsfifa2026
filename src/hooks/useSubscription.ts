@@ -6,9 +6,8 @@ export const useSubscription = () => {
   const [isBanned, setIsBanned] = useState(false);
   const [hasValidKey, setHasValidKey] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
-  const [timeLeft, setTimeLeft] = useState<number>(0); // remaining trial time in ms
-
   const TWO_MINUTES = 2 * 60 * 1000;
+  const [timeLeft, setTimeLeft] = useState<number>(TWO_MINUTES); // start at 2 min
 
   useEffect(() => {
     // Generate or get Device ID
