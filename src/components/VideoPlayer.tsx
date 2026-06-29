@@ -207,7 +207,6 @@ export default function VideoPlayer({ url, channelName, theaterMode, toggleTheat
           ref={videoRef}
           className={styles.video}
           playsInline
-          crossOrigin="anonymous"
           muted={isMuted}
           controls={!showUnmute}
         />
