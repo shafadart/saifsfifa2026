@@ -70,12 +70,6 @@ npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
----
-
-## 👑 Admin Panel Access
-You can access the admin dashboard to generate VIP keys and manage users here:
-- **URL:** `/admin`
-- **Login:** Use the `ADMIN_EMAIL` and `ADMIN_PASSWORD` you set in your `.env.local` file.
 
 ---
 
